@@ -1,0 +1,1108 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>⚔️ 리그오브레전드 알리미</title>
+<style>
+  :root {
+    --bg: #0A0A14;
+    --bg2: #10101E;
+    --card: #13132A;
+    --card2: #1A1A35;
+    --gold: #C89B3C;
+    --gold2: #F0C060;
+    --gold3: #785A28;
+    --blue: #0BC4E3;
+    --red: #E84057;
+    --green: #3DD68C;
+    --text: #E8E0CC;
+    --sub: #9B8F7A;
+    --border: #2A2A4A;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', 'Malgun Gothic', sans-serif; min-height: 100vh; }
+
+  /* === HEADER === */
+  .header { background: linear-gradient(135deg, #0A0A14 0%, #1A0A00 50%, #0A0A14 100%); border-bottom: 2px solid var(--gold3); padding: 16px 24px; display: flex; align-items: center; gap: 12px; }
+  .header h1 { font-size: 22px; color: var(--gold2); letter-spacing: 1px; text-shadow: 0 0 20px rgba(200,155,60,0.5); }
+  .header .version-badge { background: var(--gold3); color: var(--gold2); padding: 3px 10px; border-radius: 12px; font-size: 12px; font-weight: bold; margin-left: auto; }
+
+  /* === LAYOUT === */
+  .container { max-width: 1100px; margin: 0 auto; padding: 24px 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  @media(max-width:768px){ .container { grid-template-columns: 1fr; } }
+
+  /* === SECTION CARD === */
+  .section { background: var(--card); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+  .section-head { background: linear-gradient(90deg, var(--card2), var(--card)); padding: 14px 18px; border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 8px; }
+  .section-head h2 { font-size: 15px; color: var(--gold2); letter-spacing: 0.5px; }
+  .section-body { padding: 18px; }
+
+  /* === PATCH SECTION === */
+  .patch-version { text-align: center; padding: 16px 0 12px; }
+  .patch-version .ver-label { font-size: 11px; color: var(--sub); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; }
+  .patch-version .ver-num { font-size: 32px; font-weight: bold; color: var(--gold2); text-shadow: 0 0 20px rgba(200,155,60,0.4); }
+  .patch-version .ver-status { font-size: 12px; color: var(--sub); margin-top: 4px; }
+  .btn-row { display: flex; gap: 8px; flex-wrap: wrap; margin: 10px 0; }
+  .btn { padding: 8px 14px; border-radius: 6px; border: none; cursor: pointer; font-size: 13px; font-weight: bold; transition: all .2s; }
+  .btn-gold { background: linear-gradient(135deg, var(--gold3), var(--gold)); color: #000; }
+  .btn-gold:hover { background: linear-gradient(135deg, var(--gold), var(--gold2)); transform: translateY(-1px); }
+  .btn-outline { background: transparent; border: 1px solid var(--border); color: var(--sub); }
+  .btn-outline:hover { border-color: var(--gold3); color: var(--gold); }
+  .btn-red { background: rgba(232,64,87,0.15); border: 1px solid var(--red); color: var(--red); }
+  .btn-red:hover { background: rgba(232,64,87,0.3); }
+  .btn-blue { background: rgba(11,196,227,0.1); border: 1px solid var(--blue); color: var(--blue); }
+  .btn-blue:hover { background: rgba(11,196,227,0.25); }
+  .config-row { margin: 10px 0; }
+  .config-row label { font-size: 12px; color: var(--sub); display: block; margin-bottom: 4px; }
+  .config-row input { width: 100%; background: var(--bg2); border: 1px solid var(--border); border-radius: 6px; color: var(--text); padding: 7px 10px; font-size: 13px; outline: none; }
+  .config-row input:focus { border-color: var(--gold3); }
+  .log-box { background: var(--bg2); border: 1px solid var(--border); border-radius: 6px; padding: 10px; height: 120px; overflow-y: auto; font-size: 11px; color: var(--sub); font-family: monospace; }
+  .log-box p { margin-bottom: 3px; }
+  .log-box .log-ok { color: var(--green); }
+  .log-box .log-new { color: var(--gold2); font-weight: bold; }
+  .log-box .log-err { color: var(--red); }
+  .history-list { max-height: 100px; overflow-y: auto; font-size: 12px; }
+  .history-item { display: flex; align-items: center; gap: 8px; padding: 5px 0; border-bottom: 1px solid var(--border); }
+  .history-item:last-child { border: none; }
+  .history-item .hi-ver { color: var(--gold2); font-weight: bold; }
+  .history-item .hi-time { color: var(--sub); font-size: 11px; }
+  .notif-banner { background: rgba(200,155,60,0.1); border: 1px solid var(--gold3); border-radius: 8px; padding: 10px 14px; margin-bottom: 12px; font-size: 13px; color: var(--gold2); display: none; }
+  .notif-banner.show { display: flex; align-items: center; gap: 8px; }
+  .patch-link-box { margin: 8px 0; }
+  .patch-link-box a { color: var(--blue); font-size: 13px; text-decoration: none; display: flex; align-items: center; gap: 6px; }
+  .patch-link-box a:hover { color: var(--gold2); }
+
+  /* === COUNTER SECTION === */
+  .counter-section { grid-column: 1 / -1; }
+  .search-wrap { position: relative; margin-bottom: 16px; }
+  .search-input { width: 100%; background: var(--bg2); border: 2px solid var(--border); border-radius: 10px; color: var(--text); padding: 12px 16px 12px 44px; font-size: 15px; outline: none; transition: border-color .2s; }
+  .search-input:focus { border-color: var(--gold3); }
+  .search-icon { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); font-size: 18px; pointer-events: none; }
+  .autocomplete-list { position: absolute; top: 100%; left: 0; right: 0; background: var(--card2); border: 1px solid var(--gold3); border-radius: 0 0 8px 8px; z-index: 100; max-height: 220px; overflow-y: auto; display: none; }
+  .autocomplete-list.show { display: block; }
+  .ac-item { display: flex; align-items: center; gap: 10px; padding: 8px 12px; cursor: pointer; transition: background .15s; }
+  .ac-item:hover, .ac-item.active { background: rgba(200,155,60,0.15); }
+  .ac-item img { width: 32px; height: 32px; border-radius: 50%; border: 1px solid var(--gold3); object-fit: cover; }
+  .ac-item .ac-name { font-size: 14px; }
+  .ac-item .ac-role { font-size: 11px; color: var(--sub); margin-left: auto; }
+
+  /* === RESULT PANEL === */
+  #result-panel { display: none; }
+  #result-panel.show { display: block; }
+  .champ-header { display: flex; align-items: center; gap: 16px; padding: 16px; background: var(--bg2); border-radius: 10px; margin-bottom: 18px; border: 1px solid var(--border); }
+  .champ-header img { width: 72px; height: 72px; border-radius: 50%; border: 3px solid var(--gold); box-shadow: 0 0 20px rgba(200,155,60,0.3); object-fit: cover; }
+  .champ-header .ch-info h3 { font-size: 22px; color: var(--gold2); }
+  .champ-header .ch-info .ch-role { font-size: 13px; color: var(--sub); margin-top: 2px; }
+  .champ-header .ch-desc { margin-left: auto; font-size: 12px; color: var(--sub); text-align: right; max-width: 220px; line-height: 1.5; }
+
+  .matchup-tabs { display: flex; gap: 0; margin-bottom: 16px; border-radius: 8px; overflow: hidden; border: 1px solid var(--border); }
+  .tab-btn { flex: 1; padding: 10px; background: var(--bg2); color: var(--sub); border: none; cursor: pointer; font-size: 13px; font-weight: bold; transition: all .2s; }
+  .tab-btn.active { background: linear-gradient(135deg, #1a2a10, #0d1f0d); color: var(--green); border-bottom: 2px solid var(--green); }
+  .tab-btn.active.hard { background: linear-gradient(135deg, #2a1010, #1f0d0d); color: var(--red); border-bottom: 2px solid var(--red); }
+
+  .matchup-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(310px, 1fr)); gap: 12px; }
+  .matchup-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 14px; display: flex; gap: 12px; align-items: flex-start; transition: border-color .2s, transform .2s; }
+  .matchup-card:hover { border-color: var(--gold3); transform: translateY(-2px); }
+  .matchup-card.hard-card:hover { border-color: var(--red); }
+  .mc-portrait { position: relative; flex-shrink: 0; }
+  .mc-portrait img { width: 60px; height: 60px; border-radius: 50%; border: 2px solid var(--green); object-fit: cover; }
+  .mc-portrait.hard img { border-color: var(--red); }
+  .mc-portrait .mc-rank { position: absolute; top: -5px; right: -5px; width: 20px; height: 20px; background: var(--green); border-radius: 50%; font-size: 11px; font-weight: bold; color: #000; display: flex; align-items: center; justify-content: center; }
+  .mc-portrait.hard .mc-rank { background: var(--red); color: #fff; }
+  .mc-info { flex: 1; min-width: 0; }
+  .mc-info h4 { font-size: 15px; color: var(--text); margin-bottom: 6px; }
+  .mc-wr-bar { height: 5px; background: var(--border); border-radius: 3px; margin-bottom: 6px; overflow: hidden; }
+  .mc-wr-fill { height: 100%; background: linear-gradient(90deg, #3DD68C, #7AFF9C); border-radius: 3px; transition: width .8s ease; }
+  .mc-wr-fill.hard { background: linear-gradient(90deg, #E84057, #FF6070); }
+  .mc-wr-label { font-size: 12px; color: var(--sub); margin-bottom: 5px; }
+  .mc-wr-label span { color: var(--green); font-weight: bold; }
+  .mc-wr-label span.hard { color: var(--red); }
+  .mc-tip { font-size: 12px; color: var(--sub); line-height: 1.5; }
+
+  .no-data { text-align: center; padding: 30px; color: var(--sub); font-size: 14px; }
+  .no-data .nd-icon { font-size: 40px; margin-bottom: 10px; }
+  .no-data p { line-height: 1.6; }
+
+  /* === TAG BADGES === */
+  .tag { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: bold; margin-right: 4px; }
+  .tag-top { background: rgba(200,155,60,0.2); color: var(--gold); border: 1px solid var(--gold3); }
+  .tag-jng { background: rgba(61,214,140,0.15); color: var(--green); border: 1px solid rgba(61,214,140,0.4); }
+  .tag-mid { background: rgba(11,196,227,0.15); color: var(--blue); border: 1px solid rgba(11,196,227,0.4); }
+  .tag-bot { background: rgba(232,64,87,0.15); color: var(--red); border: 1px solid rgba(232,64,87,0.4); }
+  .tag-sup { background: rgba(160,100,220,0.15); color: #C080FF; border: 1px solid rgba(160,100,220,0.4); }
+
+  .disclaimer { text-align: center; font-size: 11px; color: var(--sub); margin-top: 16px; padding: 10px; background: rgba(255,255,255,0.03); border-radius: 6px; }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: var(--bg2); }
+  ::-webkit-scrollbar-thumb { background: var(--gold3); border-radius: 3px; }
+
+  .monitor-status { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; padding: 4px 10px; border-radius: 12px; background: rgba(255,255,255,0.05); }
+  .status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--sub); }
+  .status-dot.active { background: var(--green); box-shadow: 0 0 6px var(--green); animation: pulse 1.5s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+  .divider { border: none; border-top: 1px solid var(--border); margin: 12px 0; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <span style="font-size:24px">⚔️</span>
+  <h1>리그오브레전드 알리미</h1>
+  <div class="version-badge" id="header-ver">버전 확인 중…</div>
+</div>
+
+<div class="container">
+
+  <!-- ===== PATCH MONITOR ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span>🔔</span>
+      <h2>패치 모니터링</h2>
+      <div class="monitor-status" id="mon-status" style="margin-left:auto">
+        <div class="status-dot" id="status-dot"></div>
+        <span id="status-text">대기 중</span>
+      </div>
+    </div>
+    <div class="section-body">
+      <div id="new-patch-banner" class="notif-banner">
+        🎉 <strong>새 패치 감지!</strong> <span id="banner-ver"></span> 패치가 출시되었습니다.
+        <a id="banner-link" href="#" target="_blank" style="color:var(--gold2);margin-left:auto;font-size:12px">패치노트 보기 →</a>
+      </div>
+      <div class="patch-version">
+        <div class="ver-label">현재 최신 패치 버전</div>
+        <div class="ver-num" id="current-ver">—</div>
+        <div class="ver-status" id="ver-status">아직 확인 전</div>
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-gold" id="btn-start" onclick="startMonitor()">▶ 모니터링 시작</button>
+        <button class="btn btn-red" id="btn-stop" onclick="stopMonitor()" style="display:none">⏹ 중지</button>
+        <button class="btn btn-blue" onclick="checkNow()">🔍 지금 확인</button>
+        <button class="btn btn-outline" onclick="openPatchNotes()">🌐 패치노트 열기</button>
+      </div>
+      <div class="config-row">
+        <label>⏱ 확인 간격 (분)</label>
+        <input type="number" id="interval-min" value="5" min="1" max="60" style="width:80px">
+      </div>
+      <div class="config-row">
+        <label>🔔 Discord 웹훅 URL (선택)</label>
+        <input type="text" id="discord-url" placeholder="https://discord.com/api/webhooks/...">
+      </div>
+      <hr class="divider">
+      <div style="font-size:12px;color:var(--sub);margin-bottom:6px">📋 활동 로그</div>
+      <div class="log-box" id="log-box"></div>
+      <button class="btn btn-outline" onclick="clearLog()" style="margin-top:8px;font-size:11px;padding:4px 10px">초기화</button>
+    </div>
+  </div>
+
+  <!-- ===== PATCH HISTORY ===== -->
+  <div class="section">
+    <div class="section-head">
+      <span>🗂</span>
+      <h2>패치 감지 이력</h2>
+    </div>
+    <div class="section-body">
+      <div class="patch-link-box">
+        <a href="https://www.leagueoflegends.com/ko-kr/news/tags/patch-notes/" target="_blank">📋 전체 패치노트 목록 (한국어)</a>
+      </div>
+      <div class="patch-link-box">
+        <a href="https://www.leagueoflegends.com/en-us/news/tags/patch-notes/" target="_blank">📋 전체 패치노트 목록 (영어)</a>
+      </div>
+      <div class="patch-link-box" id="auto-link-box" style="display:none">
+        <a id="auto-link" href="#" target="_blank">🔗 자동 추정 링크</a>
+      </div>
+      <hr class="divider">
+      <div style="font-size:12px;color:var(--sub);margin-bottom:8px">감지된 패치 기록</div>
+      <div class="history-list" id="history-list">
+        <div style="color:var(--sub);font-size:12px;text-align:center;padding:16px">아직 감지된 패치가 없습니다.</div>
+      </div>
+      <hr class="divider">
+      <div style="font-size:12px;color:var(--sub);margin-bottom:6px">🔔 브라우저 알림</div>
+      <button class="btn btn-outline" onclick="requestNotifPerm()" style="font-size:12px">알림 허용 요청</button>
+      <span id="notif-perm-status" style="font-size:11px;color:var(--sub);margin-left:8px"></span>
+    </div>
+  </div>
+
+  <!-- ===== CHAMPION COUNTER ===== -->
+  <div class="section counter-section">
+    <div class="section-head">
+      <span>🎯</span>
+      <h2>챔피언 상성 분석</h2>
+      <span style="margin-left:auto;font-size:11px;color:var(--sub)">✅ 커뮤니티 통계 데이터 기반</span>
+    </div>
+    <div class="section-body">
+      <div class="search-wrap">
+        <span class="search-icon">🔍</span>
+        <input class="search-input" id="champ-search" type="text" placeholder="챔피언 이름으로 검색 (한국어/영어)" autocomplete="off" oninput="onSearch()" onkeydown="onKey(event)" onfocus="onSearch()">
+        <div class="autocomplete-list" id="ac-list"></div>
+      </div>
+
+      <div id="result-panel">
+        <div class="champ-header" id="champ-header"></div>
+        <div class="matchup-tabs">
+          <button class="tab-btn active" id="tab-easy" onclick="switchTab('easy')">✅ 상대하기 쉬운 챔피언 (유리한 상성)</button>
+          <button class="tab-btn" id="tab-hard" onclick="switchTab('hard')">⚠️ 조심해야 할 챔피언 (불리한 상성)</button>
+        </div>
+        <div class="matchup-grid" id="matchup-grid"></div>
+        <div class="disclaimer">⚠️ 해당 데이터는 커뮤니티 통계 및 공개 리플레이 분석을 기반으로 한 참고용 정보입니다. 실제 승률은 플레이어 숙련도, 패치 버전에 따라 달라질 수 있습니다.</div>
+      </div>
+
+      <div id="no-result" style="display:none" class="no-data">
+        <div class="nd-icon">🤔</div>
+        <p>해당 챔피언의 데이터를 찾을 수 없습니다.<br>더 많은 챔피언 데이터가 준비 중입니다.</p>
+      </div>
+    </div>
+  </div>
+
+</div><!-- /container -->
+
+<script>
+// ============================================================
+// PATCH MONITORING
+// ============================================================
+let monitorTimer = null;
+let knownVersion = localStorage.getItem('lol_known_version') || null;
+let patchHistory = JSON.parse(localStorage.getItem('lol_patch_history') || '[]');
+
+function addLog(msg, type='') {
+  const box = document.getElementById('log-box');
+  const t = new Date().toLocaleTimeString('ko-KR');
+  const p = document.createElement('p');
+  p.className = type ? 'log-' + type : '';
+  p.textContent = '[' + t + '] ' + msg;
+  box.insertBefore(p, box.firstChild);
+}
+
+async function fetchVersion() {
+  const r = await fetch('https://ddragon.leagueoflegends.com/api/versions.json');
+  const d = await r.json();
+  return d[0];
+}
+
+async function checkNow() {
+  addLog('버전 확인 중…');
+  try {
+    const ver = await fetchVersion();
+    document.getElementById('current-ver').textContent = ver;
+    document.getElementById('header-ver').textContent = 'v' + ver;
+    document.getElementById('ver-status').textContent = '최종 확인: ' + new Date().toLocaleString('ko-KR');
+    // Auto patch notes link
+    const parts = ver.split('.');
+    if (parts.length >= 2) {
+      const url = 'https://www.leagueoflegends.com/ko-kr/news/game-updates/patch-' + parts[0] + '-' + parts[1] + '-notes/';
+      const al = document.getElementById('auto-link');
+      al.href = url;
+      al.textContent = '🔗 패치 ' + ver + ' 노트 바로가기';
+      document.getElementById('auto-link-box').style.display = 'block';
+    }
+    if (knownVersion && ver !== knownVersion) {
+      onNewPatch(ver);
+    } else if (!knownVersion) {
+      knownVersion = ver;
+      localStorage.setItem('lol_known_version', ver);
+      addLog('기준 버전 설정: ' + ver, 'ok');
+    } else {
+      addLog('새 패치 없음 (현재 ' + ver + ')', 'ok');
+    }
+    // Also load champion data if not loaded
+    if (!champLoaded) loadChampions(ver);
+  } catch(e) {
+    addLog('확인 실패: ' + e.message, 'err');
+  }
+}
+
+function onNewPatch(ver) {
+  addLog('🎉 새 패치 감지: ' + ver, 'new');
+  knownVersion = ver;
+  localStorage.setItem('lol_known_version', ver);
+  // Banner
+  document.getElementById('banner-ver').textContent = ver;
+  const parts = ver.split('.');
+  if (parts.length >= 2)
+    document.getElementById('banner-link').href = 'https://www.leagueoflegends.com/ko-kr/news/game-updates/patch-' + parts[0] + '-' + parts[1] + '-notes/';
+  document.getElementById('new-patch-banner').classList.add('show');
+  // History
+  patchHistory.unshift({ ver, time: new Date().toLocaleString('ko-KR') });
+  localStorage.setItem('lol_patch_history', JSON.stringify(patchHistory));
+  renderHistory();
+  // Browser notification
+  if (Notification.permission === 'granted') {
+    new Notification('⚔️ 리그오브레전드 새 패치!', { body: '버전 ' + ver + ' 패치가 출시되었습니다.' });
+  }
+  // Discord
+  const hook = document.getElementById('discord-url').value.trim();
+  if (hook) sendDiscord(hook, ver);
+}
+
+async function sendDiscord(url, ver) {
+  try {
+    await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ content: '⚔️ **리그오브레전드 새 패치 감지!**\n버전: **' + ver + '**\nhttps://www.leagueoflegends.com/ko-kr/news/game-updates/patch-' + ver.replace(/\./g, '-').slice(0, -2) + '-notes/' }) });
+    addLog('Discord 알림 전송 완료', 'ok');
+  } catch(e) { addLog('Discord 전송 실패', 'err'); }
+}
+
+function startMonitor() {
+  const mins = parseInt(document.getElementById('interval-min').value) || 5;
+  stopMonitor();
+  checkNow();
+  monitorTimer = setInterval(checkNow, mins * 60000);
+  document.getElementById('btn-start').style.display = 'none';
+  document.getElementById('btn-stop').style.display = '';
+  document.getElementById('status-dot').classList.add('active');
+  document.getElementById('status-text').textContent = '모니터링 중 (' + mins + '분 간격)';
+  addLog('모니터링 시작 (' + mins + '분 간격)', 'ok');
+}
+
+function stopMonitor() {
+  if (monitorTimer) { clearInterval(monitorTimer); monitorTimer = null; }
+  document.getElementById('btn-start').style.display = '';
+  document.getElementById('btn-stop').style.display = 'none';
+  document.getElementById('status-dot').classList.remove('active');
+  document.getElementById('status-text').textContent = '대기 중';
+}
+
+function openPatchNotes() {
+  window.open('https://www.leagueoflegends.com/ko-kr/news/tags/patch-notes/', '_blank');
+}
+
+function clearLog() {
+  document.getElementById('log-box').innerHTML = '';
+  addLog('로그 초기화됨');
+}
+
+function renderHistory() {
+  const el = document.getElementById('history-list');
+  if (patchHistory.length === 0) {
+    el.innerHTML = '<div style="color:var(--sub);font-size:12px;text-align:center;padding:16px">아직 감지된 패치가 없습니다.</div>';
+    return;
+  }
+  el.innerHTML = patchHistory.slice(0, 20).map(h =>
+    '<div class="history-item"><span>🟡</span><span class="hi-ver">' + h.ver + '</span><span class="hi-time">' + h.time + '</span></div>'
+  ).join('');
+}
+
+function requestNotifPerm() {
+  Notification.requestPermission().then(p => {
+    document.getElementById('notif-perm-status').textContent = p === 'granted' ? '✅ 허용됨' : p === 'denied' ? '❌ 차단됨' : '❓ 미결정';
+  });
+}
+
+// Init history
+renderHistory();
+if (Notification.permission === 'granted') document.getElementById('notif-perm-status').textContent = '✅ 이미 허용됨';
+
+// ============================================================
+// CHAMPION DATA (Riot Data Dragon)
+// ============================================================
+let champData = {}; // id -> {name_kr, name_en, id, tags}
+let champLoaded = false;
+let ddVersion = '14.24.1';
+
+async function loadChampions(ver) {
+  try {
+    const r = await fetch('https://ddragon.leagueoflegends.com/cdn/' + ver + '/data/ko_KR/champion.json');
+    const d = await r.json();
+    ddVersion = ver;
+    champData = {};
+    for (const key in d.data) {
+      const c = d.data[key];
+      champData[key] = { id: key, name_kr: c.name, name_en: c.id, tags: c.tags };
+    }
+    champLoaded = true;
+    addLog('챔피언 데이터 로드 완료 (' + Object.keys(champData).length + '명)', 'ok');
+  } catch(e) {
+    addLog('챔피언 데이터 로드 실패: ' + e.message, 'err');
+  }
+}
+
+function champImg(id) {
+  return 'https://ddragon.leagueoflegends.com/cdn/' + ddVersion + '/img/champion/' + id + '.png';
+}
+
+// ============================================================
+// COUNTER DATABASE (커뮤니티 통계 기반)
+// ============================================================
+const ROLE_MAP = { '탑':'top','정글':'jng','미드':'mid','원딜':'bot','서포터':'sup' };
+const ROLE_TAG = { '탑':'tag-top','정글':'tag-jng','미드':'tag-mid','원딜':'tag-bot','서포터':'tag-sup' };
+
+const DB = {
+// ===== TOP =====
+"Aatrox":{ role:"탑", easy:[
+  {id:"Malphite",wr:57.4,tip:"아트록스의 공격력 기반 딜에 말파이트 W 패시브가 카운터. 근접 교전에서 지속 압박 가능"},
+  {id:"Garen",wr:55.8,tip:"가렌의 침묵과 방어력으로 아트록스 연계 차단. Q로 CC 무시 후 딜"},
+  {id:"Nasus",wr:55.1,tip:"초반 약한 나서스를 지속 압박해 성장 방해 가능. 후반 라인전 우위"},
+  {id:"Yorick",wr:54.2,tip:"요릭의 소환수로 인한 딜을 아트록스가 효율적으로 처리 못함"},
+  {id:"Chogath",wr:53.6,tip:"초가스의 체력 회복과 CC로 버티는 플레이에 아트록스 지속 딜 우위"},
+],hard:[
+  {id:"Renekton",wr:55.2,tip:"레넥톤의 초반 W 스턴으로 아트록스 연계 강제 차단"},
+  {id:"Vayne",wr:54.8,tip:"원거리 공격과 높은 기동성으로 아트록스 스킬 범위 지속 회피"},
+  {id:"Fiora",wr:53.7,tip:"피오라의 급소 스킬로 아트록스 부활 타이밍 무력화 가능"},
+  {id:"Olaf",wr:52.9,tip:"올라프 R로 CC 무시, 아트록스 W 차단 후 근접 압박"},
+  {id:"Quinn",wr:52.1,tip:"퀸의 이동기로 아트록스 모든 스킬 패턴 안전하게 회피"},
+]},
+"Darius":{ role:"탑", easy:[
+  {id:"Mordekaiser",wr:58.2,tip:"모데카이저의 이동기 부재를 이용해 다리우스가 도끼로 지속 압박"},
+  {id:"Sett",wr:56.4,tip:"세트는 세트 W를 위해 근접해야 하는데 다리우스의 출혈 스택이 먼저 쌓임"},
+  {id:"Yorick",wr:55.8,tip:"요릭은 도주기가 없어 다리우스의 E 끌어당기기에 취약"},
+  {id:"Garen",wr:55.1,tip:"가렌이 침묵 후 도망가도 다리우스 E로 강제 교전. 출혈 스택 이점"},
+  {id:"Tryndamere",wr:54.3,tip:"트린다미어가 R 사용 전에 5스택 출혈로 피통 압박 가능"},
+],hard:[
+  {id:"Vayne",wr:57.1,tip:"원거리 공격으로 다리우스 E 사거리 밖에서 안전하게 딜"},
+  {id:"Kennen",wr:55.3,tip:"켄넨의 원거리 스킬로 지속 견제, 다리우스 접근 시 스턴"},
+  {id:"Gnar",wr:54.6,tip:"원거리 페이즈로 안전 견제 후 변신 시 CC로 다리우스 압도"},
+  {id:"Teemo",wr:54.1,tip:"실명 디버프로 다리우스 AA 무력화, 도주 시 버섯 설치"},
+  {id:"Quinn",wr:53.4,tip:"빠른 이동기로 다리우스 E 사거리 무력화"},
+]},
+"Fiora":{ role:"탑", easy:[
+  {id:"Malphite",wr:60.2,tip:"말파이트의 느린 이동 속도와 뻔한 패턴을 급소로 모두 차단"},
+  {id:"Nasus",wr:57.8,tip:"나서스의 느린 기동성을 활용, 급소 딜로 스택 쌓기 방해"},
+  {id:"Garen",wr:56.4,tip:"가렌의 침묵 후 도주 패턴을 피오라 E로 무력화"},
+  {id:"Chogath",wr:55.9,tip:"초가스의 큰 히트박스로 급소 타격 용이. 이동기 없어 추격 당함"},
+  {id:"Yorick",wr:54.7,tip:"요릭 소환수를 피해 본체만 집중 공격하는 플레이가 피오라에게 유리"},
+],hard:[
+  {id:"Darius",wr:54.8,tip:"다리우스의 Q 내부 사거리 피해를 피하기 어렵고 W로 피오라 무장해제"},
+  {id:"Teemo",wr:54.2,tip:"실명으로 피오라 AA 기반 딜 무력화"},
+  {id:"Camille",wr:53.6,tip:"카밀의 E로 피오라 이동기를 예측, 근접전 우위 차지"),
+  {id:"Renekton",wr:53.1,tip:"레넥톤 초반 W 스턴으로 피오라 E 이전에 선딜"},
+  {id:"Pantheon",wr:52.8,tip:"판테온 W 패시브로 피오라 AA 차단, 스킬 차단 중단 효과"},
+]},
+"Garen":{ role:"탑", easy:[
+  {id:"Teemo",wr:56.2,tip:"가렌이 Q로 테모에게 접근하면 침묵으로 실명 해제 가능. 지속딜 우위"},
+  {id:"Mordekaiser",wr:55.4,tip:"가렌의 높은 방어력이 모데카이저 AP 딜 상당히 감쇄"},
+  {id:"Nasus",wr:54.9,tip:"가렌의 E 지속 딜로 나서스 스택 쌓기 방해 가능"),
+  {id:"Sett",wr:54.1,tip:"가렌 W 방어막이 세트 W 최대 딜을 흡수, 교환 이점"},
+  {id:"Yorick",wr:53.7,tip:"요릭의 소환수보다 가렌의 지속 딜이 효율적"},
+],hard:[
+  {id:"Vayne",wr:58.4,tip:"베인의 실버 볼트가 가렌의 높은 체력을 빠르게 제거"},
+  {id:"Darius",wr:55.1,tip:"다리우스 Q 내부 사거리와 출혈 스택으로 가렌 압박"},
+  {id:"Quinn",wr:54.6,tip:"퀸의 원거리 지속 견제와 이동기로 가렌 접근 무력화"},
+  {id:"Camille",wr:53.8,tip:"카밀의 이동기와 참호로 가렌의 단순한 패턴 카운터"},
+  {id:"Jayce",wr:53.2,tip:"제이스의 원거리 포 폼으로 가렌이 접근하기 전 지속 견제"},
+]},
+"Irelia":{ role:"탑", easy:[
+  {id:"Malphite",wr:59.4,tip:"말파이트의 AP 빌드에 이렐리아 Q 연계 딜이 압도적"},
+  {id:"Nasus",wr:57.2,tip:"나서스의 W 느린 걸 이용해 이렐리아 Q 스택 쌓으며 압박"},
+  {id:"Garen",wr:56.1,tip:"이렐리아의 고 이동성으로 가렌 패턴 예측 후 Q 연계"},
+  {id:"Tryndamere",wr:55.4,tip:"이렐리아 Q가 트린다미어 R에 맞춰 딜 지속, 이탈기로 안전 유지"},
+  {id:"Mordekaiser",wr:54.8,tip:"기동성 부족한 모데카이저를 Q 연계로 지속 견제"},
+],hard:[
+  {id:"Renekton",wr:56.3,tip:"레넥톤 초반 폭발 딜이 이렐리아 Q 스택 완성 전에 압박"},
+  {id:"Malzahar",wr:55.1,tip:"말자하르 R이 이렐리아의 모든 이동기를 즉시 차단"},
+  {id:"Darius",wr:54.7,tip:"다리우스 E로 이렐리아 Q 전진을 차단 후 출혈 스택 축적"},
+  {id:"Olaf",wr:53.9,tip:"올라프 R로 이렐리아 E CC 무시, 안정적인 근접 딜"},
+  {id:"Trundle",wr:53.2,tip:"트런들의 Q가 이렐리아의 CC 피하기 어렵게 만들고 기둥으로 차단"},
+]},
+"Jax":{ role:"탑", easy:[
+  {id:"Garen",wr:56.9,tip:"잭스 E로 가렌의 E 스핀 딜 차단, 이후 W-Q 연계 교환 이점"},
+  {id:"Malphite",wr:55.3,tip:"잭스 E로 말파이트 패시브 AA 차단 후 폭발 딜 연계"},
+  {id:"Mordekaiser",wr:55.1,tip:"잭스의 이동기와 E로 모데카이저 딜 차단, 근접전 압도"},
+  {id:"Nasus",wr:54.7,tip:"잭스 점프로 나서스 W 느린 이전에 교환 성공 반복"},
+  {id:"Yorick",wr:54.2,tip:"요릭 소환수 무시하고 잭스가 본체에 Q로 계속 접근 가능"},
+],hard:[
+  {id:"Teemo",wr:56.2,tip:"테모 실명으로 잭스 E AA 기반 딜 무력화"},
+  {id:"Quinn",wr:55.1,tip:"퀸의 이동기로 잭스 Q 도착 전에 이탈, 원거리 딜"},
+  {id:"Vayne",wr:54.6,tip:"베인 실버 볼트가 잭스 체력 빠르게 감소, 이동기로 회피"},
+  {id:"Fiora",wr:53.9,tip:"피오라가 잭스 E 카운터스트라이크 판단 후 도주, 급소 딜"},
+  {id:"Kennen",wr:53.2,tip:"켄넨 원거리 스킬과 CC로 잭스 근접 압박 방어"},
+]},
+"Malphite":{ role:"탑", easy:[
+  {id:"Tryndamere",wr:62.1,tip:"트린다미어의 물리 딜을 말파이트 W로 90% 반사, 공격 속도 너프"},
+  {id:"Jax",wr:59.4,tip:"잭스의 AA 기반 딜을 패시브로 차단. 느린 게임 패이스에서 말파이트 우세"},
+  {id:"Yasuo",wr:58.7,tip:"야스오의 AA 딜 무력화, R이 야스오 R 즉발 콤보에 시너지"},
+  {id:"Fiora",wr:57.2,tip:"피오라 AA 딜을 패시브로 흡수, 급소만 케어하면 유지력 우세"},
+  {id:"Darius",wr:55.8,tip:"다리우스의 물리 딜을 W로 반사. 장기전에서 말파이트 우위"},
+],hard:[
+  {id:"Aatrox",wr:57.4,tip:"아트록스 AP가 없어 말파이트 W 패시브 활용 못하는 AP 빌드엔 취약"},
+  {id:"Gwen",wr:55.1,tip:"그웬의 W로 말파이트 R을 포함한 스킬 무력화 가능"},
+  {id:"Teemo",wr:54.8,tip:"AP 테모 딜을 말파이트가 방어력으로 못 막음"),
+  {id:"Kennen",wr:54.2,tip:"켄넨 원거리 AP 딜에 말파이트 방어력 효율 낮음"},
+  {id:"Vayne",wr:53.7,tip:"베인 실버 볼트 트루 데미지가 말파이트 체력 지속 감소"},
+]},
+"Renekton":{ role:"탑", easy:[
+  {id:"Irelia",wr:56.3,tip:"이렐리아 Q 스택 완성 전 레넥톤 W 스턴으로 선딜, 초반 압도"},
+  {id:"Yasuo",wr:55.8,tip:"야스오 바람장벽을 무시하는 레�ekton 근접 스킬 연계"},
+  {id:"Yone",wr:55.2,tip:"요네의 풍부한 대미지 전에 레넥톤 폭발 딜로 선제"},
+  {id:"Fiora",wr:54.7,tip:"레넥톤 초반 W로 피오라 E 이전에 강제 CC, 라인 주도권"},
+  {id:"Riven",wr:54.1,tip:"리벤의 스킬 사이 빈틈에 레넥톤 W 스턴으로 딜 교환 이점"},
+],hard:[
+  {id:"Nasus",wr:57.2,tip:"후반 스택 쌓인 나서스는 레넥톤이 처리 불가 수준"},
+  {id:"Malphite",wr:55.8,tip:"말파이트 W 패시브로 레넥톤 AA 딜 반사, 후반 이니시 우위"},
+  {id:"Cho'Gath",wr:54.6,tip:"초가스의 높은 체력 회복과 CC로 레넥톤 압박 버팀"},
+  {id:"Kayle",wr:54.1,tip:"케일 R로 레넥톤 폭발 딜 무효화, 원거리 전환 후 안전"},
+  {id:"Ornn",wr:53.5,tip:"오른의 높은 기본 방어력과 CC로 레넥톤 연계 차단"},
+]},
+"Yasuo":{ role:"탑", easy:[
+  {id:"Malzahar",wr:55.1,tip:"야스오 이동기로 말자하르 R 범위 밖에서 공격 가능"},
+  {id:"Lux",wr:56.4,tip:"럭스의 직선 스킬을 바람장벽으로 모두 차단, 근접 압박"},
+  {id:"Varus",wr:55.9,tip:"바루스의 기술은 대부분 발사체로 바람장벽 카운터"),
+  {id:"Mordekaiser",wr:54.2,tip:"모데카이저의 느린 기동성을 Q로 지속 견제, 높은 기동성 활용"},
+  {id:"Twisted Fate",wr:55.8,tip:"트페의 카드 스킬을 바람장벽으로 모두 차단, 이동기로 압박"},
+],hard:[
+  {id:"Malphite",wr:58.7,tip:"말파이트 W로 야스오 AA 딜 반사, R-R 연계에서 야스오 불리"},
+  {id:"Renekton",wr:55.8,tip:"레넥톤 근접 CC가 야스오 바람장벽 무시, 초반 압도"},
+  {id:"Pantheon",wr:55.2,tip:"판테온 W로 야스오 AA 차단, E 점프에 스턴"},
+  {id:"Wukong",wr:54.6,tip:"우공의 CC와 근접 딜이 야스오의 이동기를 따라잡음"},
+  {id:"Garen",wr:53.9,tip:"가렌 침묵으로 야스오 모든 스킬 봉인, 근접전 우위"},
+]},
+"Tryndamere":{ role:"탑", easy:[
+  {id:"Nasus",wr:58.4,tip:"트린다미어의 공속이 나서스 W의 느린 효과 해제 후 교환 이점"},
+  {id:"Garen",wr:56.1,tip:"트린다미어 R로 가렌 궁극기 무효화, 높은 AD로 빠른 처리"},
+  {id:"Malphite",wr:55.7,tip:"트린다미어 분노 쌓기로 지속 딜 부여, R 후 근접전 압도"},
+  {id:"Urgot",wr:54.9,tip:"트린다미어 R로 우르곳 R 처형 무효화, 이후 반격"},
+  {id:"Yorick",wr:54.3,tip:"요릭 소환수를 무시하고 본체 집중 공격 가능"},
+],hard:[
+  {id:"Malphite",wr:62.1,tip:"말파이트 W로 트린다미어 AA 딜 90% 반사, 공격 속도 너프"},
+  {id:"Teemo",wr:57.8,tip:"테모 실명으로 트린다미어 AA 무력화, R 도중에도 딜 불가"},
+  {id:"Nasus",wr:54.8,tip:"후반 스택 쌓인 나서스는 트린다미어 R 무시하고 처리 가능"},
+  {id:"Vayne",wr:54.2,tip:"베인 실버 볼트 트루 데미지로 트린다미어 체력 빠른 감소"},
+  {id:"Quinn",wr:53.7,tip:"퀸의 이동기로 트린다미어 추격 무력화, 원거리 딜"},
+]},
+
+// ===== JUNGLE =====
+"LeeSin":{ role:"정글", easy:[
+  {id:"Amumu",wr:57.2,tip:"아무무의 정글 이동 속도가 느려 리신이 버프 강탈 용이"},
+  {id:"Warwick",wr:55.8,tip:"리신의 높은 초반 딜로 워윅 선제 교전 강요 가능"},
+  {id:"Nunu",wr:55.1,tip:"눈누는 이동기 부족으로 리신 Q 연계 적중 용이"},
+  {id:"Hecarim",wr:54.7,tip:"헤카림은 스킬 중심이라 리신 W 방어막으로 교환 이점"},
+  {id:"Vi",wr:54.2,tip:"바이의 돌진 전에 리신 Q-R로 선제 처리 가능"},
+],hard:[
+  {id:"Graves",wr:55.4,tip:"그레이브즈의 높은 방어력과 DPS가 리신의 폭발 딜 후 역딜"},
+  {id:"Trundle",wr:54.8,tip:"트런들의 기둥이 리신 이동기를 막고 지속 딜 우위"},
+  {id:"Olaf",wr:54.1,tip:"올라프 R로 리신 CC 모두 무시, 근접 딜 압도"},
+  {id:"Rammus",wr:53.8,tip:"램머스의 높은 방어력이 리신 AD 딜 흡수, 도발로 강제 교전"},
+  {id:"Xin Zhao",wr:53.3,tip:"신 자오의 높은 초반 클리어와 근접 딜이 리신 초반 압박"},
+]},
+"Graves":{ role:"정글", easy:[
+  {id:"Kha'Zix",wr:57.4,tip:"그레이브즈의 연기탄으로 카직스 은신 무효화, 근접 교환 우위"},
+  {id:"Evelynn",wr:56.2,tip:"이브의 근접 딜 의존을 그레이브즈 산탄으로 효율적으로 처리"},
+  {id:"Shaco",wr:55.8,tip:"샤코 상자를 그레이브즈가 원거리로 제거 가능, 폭발 딜 우위"},
+  {id:"Nidalee",wr:55.1,tip:"니달리의 낮은 체력을 그레이브즈 폭발 딜로 빠르게 처리"},
+  {id:"Diana",wr:54.6,tip:"다이애나 R 전에 그레이브즈 폭발 콤보로 선딜 가능"},
+],hard:[
+  {id:"Amumu",wr:55.9,tip:"아무무 스킬 연계가 그레이브즈 짧은 사거리를 강제 근접 교전"},
+  {id:"Rammus",wr:55.3,tip:"램머스 방어력이 그레이브즈 물리 딜을 대부분 흡수"},
+  {id:"Wukong",wr:54.7,tip:"우공의 근접 CC가 그레이브즈 사거리 단점 극대화"),
+  {id:"Warwick",wr:53.9,tip:"워윅의 지속 딜과 회복이 그레이브즈 폭발 딜 후 역전"),
+  {id:"Olaf",wr:53.4,tip:"올라프 R로 그레이브즈 CC 무시, 지속 근접 딜 우위"},
+]},
+"Hecarim":{ role:"정글", easy:[
+  {id:"Amumu",wr:56.8,tip:"헤카림의 이동 속도 특성상 아무무보다 빠른 정글 순환"},
+  {id:"Warwick",wr:55.4,tip:"헤카림의 폭발 딜이 워윅의 체력 회복 속도를 초과"},
+  {id:"Nunu",wr:55.1,tip:"눈누의 느린 이동을 헤카림 속도로 초과, 강탈 용이"},
+  {id:"MasterYi",wr:54.6,tip:"마스터 이의 E 이전에 헤카림 E-R로 선제 CC 가능"},
+  {id:"Sejuani",wr:54.1,tip:"세주아니의 느린 이동에 헤카림 속도 이점"},
+],hard:[
+  {id:"Graves",wr:56.2,tip:"그레이브즈 폭발 딜이 헤카림 체력 빠르게 감소"},
+  {id:"Olaf",wr:55.8,tip:"올라프 R로 헤카림 R CC 무시, 지속 딜 우위"},
+  {id:"XinZhao",wr:55.1,tip:"신 자오가 헤카림 R 착지 전에 선딜 가능, 초반 교전 우위"},
+  {id:"Vi",wr:54.5,tip:"바이의 R 관통 CC가 헤카림 R 무효화"},
+  {id:"Rammus",wr:53.8,tip:"램머스 도발이 헤카림의 R 방향 예측 차단"},
+]},
+"Vi":{ role:"정글", easy:[
+  {id:"Amumu",wr:56.1,tip:"바이의 R이 아무무 Q보다 빠른 CC 발동, 선제 이니시 가능"},
+  {id:"Nunu",wr:55.4,tip:"눈누 움직임이 느려 바이 Q 적중 용이"},
+  {id:"Warwick",wr:54.8,tip:"바이 폭발 딜이 워윅의 체력 회복 무효화"},
+  {id:"Sejuani",wr:54.2,tip:"세주아니보다 빠른 바이 R CC로 선제권 확보"),
+  {id:"Hecarim",wr:53.7,tip:"바이 R이 헤카림 R 착지 이전 차단, CC로 봉쇄"},
+],hard:[
+  {id:"Olaf",wr:56.4,tip:"올라프 R로 바이 R 관통 CC 무시, 바이 처리"},
+  {id:"Graves",wr:55.2,tip:"그레이브즈 폭발 딜이 바이 R 착지 전 처리 가능"},
+  {id:"Trundle",wr:54.5,tip:"트런들 기둥이 바이 Q-R 방향 차단"),
+  {id:"Jax",wr:53.8,tip:"잭스 E가 바이 Q 착지 시 스턴, 역CC"},
+  {id:"Fiora",wr:53.1,tip:"피오라 W가 바이 R 관통 CC 무효화"),
+]},
+"Warwick":{ role:"정글", easy:[
+  {id:"MasterYi",wr:57.8,tip:"워윅 R이 마스터 이 알파 스트라이크와 충돌, CC로 봉쇄"},
+  {id:"Amumu",wr:56.3,tip:"워윅의 높은 체력 회복이 아무무 딜 압도"},
+  {id:"Nunu",wr:55.7,tip:"워윅 이동 속도 부스트로 눈누보다 빠른 정글 순환"},
+  {id:"Sejuani",wr:55.1,tip:"워윅의 지속 딜과 회복이 세주아니 버티기 극복"},
+  {id:"Hecarim",wr:54.4,tip:"워윅 R이 헤카림 R 이전에 선제 CC 발동 가능"),
+],hard:[
+  {id:"Olaf",wr:57.2,tip:"올라프 R로 워윅 R CC 무시, 지속 딜 우위"},
+  {id:"Trundle",wr:55.6,tip:"트런들이 워윅 Q 회복량을 지속 감소시킴"),
+  {id:"Graves",wr:55.1,tip:"그레이브즈 폭발 딜이 워윅 회복 속도 초과"),
+  {id:"Rammus",wr:54.3,tip:"램머스 방어력으로 워윅 물리 딜 흡수, 도발 강제"},
+  {id:"Jax",wr:53.7,tip:"잭스 E-W로 워윅 R 착지 카운터 가능"],
+]},
+"Amumu":{ role:"정글", easy:[
+  {id:"Nunu",wr:57.4,tip:"아무무의 CC 연계가 눈누보다 팀파이트 영향력 높음"},
+  {id:"Sejuani",wr:56.1,tip:"아무무 R 범위가 세주아니 팀파이트보다 폭발적"},
+  {id:"MasterYi",wr:55.8,tip:"아무무 R로 마스터 이 알파 스트라이크 봉쇄 가능"},
+  {id:"Kayn",wr:55.3,tip:"케인의 단독 교전에 아무무 R이 효과적"},
+  {id:"Viego",wr:54.8,tip:"비에고가 빙의 시 아무무 Q로 즉시 차단 가능"},
+],hard:[
+  {id:"Olaf",wr:57.2,tip:"올라프 R로 아무무 모든 CC 무시"},
+  {id:"HeCarim",wr:55.4,tip:"헤카림의 이동 속도가 아무무 Q 적중 방지"),
+  {id:"Graves",wr:55.9,tip:"그레이브즈 폭발 딜이 아무무 체력을 빠르게 소진"),
+  {id:"Vi",wr:54.8,tip:"바이가 아무무보다 빠른 선제 이니시 가능"),
+  {id:"XinZhao",wr:54.1,tip:"신 자오 R이 아무무 R 전에 선제 CC 가능"),
+]},
+
+// ===== MID =====
+"Ahri":{ role:"미드", easy:[
+  {id:"Malzahar",wr:57.8,tip:"아리의 이동기로 말자하르 R 범위 밖에서 공격, 매혹으로 채널 차단"},
+  {id:"Veigar",wr:56.4,tip:"베이가의 느린 기동성으로 아리 매혹 적중 용이, 이동기로 뒤 공격"},
+  {id:"Annie",wr:55.9,tip:"애니의 단거리 스킬에 아리의 원거리 매혹으로 선제 CC 가능"},
+  {id:"Viktor",wr:55.1,tip:"빅터의 일자형 스킬을 아리 이동기로 회피, 아리 딜 우위"},
+  {id:"Lux",wr:54.7,tip:"럭스의 직선 스킬을 아리 이동기로 모두 회피"},
+],hard:[
+  {id:"Fizz",wr:57.2,tip:"피즈 E로 아리 매혹 회피, 근접전에서 아리 압도"},
+  {id:"Zed",wr:55.8,tip:"제드의 높은 이동성이 아리 매혹을 쉽게 회피"},
+  {id:"LeBlanc",wr:54.6,tip:"르블랑이 아리보다 빠른 폭발 딜로 선제권"},
+  {id:"Kassadin",wr:54.1,tip:"카사딘 후반 R 연속 이동으로 아리 매혹 모두 회피"},
+  {id:"Akali",wr:53.7,tip:"아칼리 은신으로 아리 타겟팅 스킬 회피"},
+]},
+"Zed":{ role:"미드", easy:[
+  {id:"Veigar",wr:58.4,tip:"제드 이동기로 베이가 W 우리 범위 밖에서 공격, 폭발 딜 우위"},
+  {id:"Lux",wr:57.2,tip:"럭스의 스킬 패턴을 제드 그림자로 모두 회피"},
+  {id:"Annie",wr:56.8,tip:"애니가 CC 발동 전에 제드 폭발 딜로 처리 가능"},
+  {id:"Malzahar",wr:56.1,tip:"제드 R로 말자하르 R 채널 도중 포지션 이탈 가능"},
+  {id:"Viktor",wr:55.4,tip:"빅터의 직선 스킬을 제드 그림자로 회피, AD 버스트 우위"},
+],hard:[
+  {id:"Kayle",wr:58.1,tip:"케일 R이 제드 R 타이밍에 무적 발동, 완전 무효화"},
+  {id:"Lissandra",wr:56.7,tip:"리산드라 자기 R이 제드 R 딜 완전 흡수"},
+  {id:"Malzahar",wr:55.2,tip:"말자하르 R이 제드 R 귀환 전 CC로 봉쇄 가능"},
+  {id:"Galio",wr:54.8,tip:"갈리오의 높은 마법 저항과 도발로 제드 딜 무효화"},
+  {id:"Fizz",wr:54.1,tip:"피즈 E로 제드 R 딜 완전 회피, 역딜 가능"},
+]},
+"Akali":{ role:"미드", easy:[
+  {id:"Veigar",wr:57.9,tip:"아칼리 은신으로 베이가 W 스턴 회피, 폭발 콤보 일방적"},
+  {id:"Annie",wr:56.4,tip:"아칼리 이동기로 애니 스턴 거리 밖 공격 가능"},
+  {id:"Lux",wr:55.8,tip:"럭스 스킬을 은신으로 모두 회피, 근접 딜 우위"},
+  {id:"Malzahar",wr:55.2,tip:"아칼리 이동기로 말자하르 R 범위 이탈 가능"},
+  {id:"Syndra",wr:54.6,tip:"신드라의 직선 스킬을 은신과 이동기로 회피"},
+],hard:[
+  {id:"LeBlanc",wr:56.8,tip:"르블랑이 아칼리보다 빠른 폭발 딜로 선제권"},
+  {id:"Zoe",wr:55.4,tip:"조이의 Q 수면으로 아칼리 은신 해제 후 처리"),
+  {id:"Diana",wr:54.9,tip:"다이애나가 아칼리 은신 내 이동 추적 가능"},
+  {id:"Galio",wr:54.2,tip:"갈리오 W로 아칼리 딜을 흡수, 도발 후 CC"},
+  {id:"Renekton",wr:53.6,tip:"레넥톤 W 스턴으로 아칼리 은신 전 CC"},
+]},
+"Fizz":{ role:"미드", easy:[
+  {id:"Lux",wr:59.2,tip:"피즈 E로 럭스 모든 직선 스킬 회피, 근접 폭발 딜"},
+  {id:"Ahri",wr:57.2,tip:"피즈 E로 아리 매혹 회피, 근접전 압도"},
+  {id:"Annie",wr:56.8,tip:"피즈 E로 애니 스턴 회피 후 폭발 콤보"},
+  {id:"Malzahar",wr:55.4,tip:"피즈 E로 말자하르 R 즉시 회피 가능"},
+  {id:"Syndra",wr:55.1,tip:"신드라 볼 스킬을 E로 회피, 근접 딜 연계"},
+],hard:[
+  {id:"Galio",wr:56.4,tip:"갈리오 높은 마저로 피즈 AP 딜 흡수, W 도발"},
+  {id:"Kassadin",wr:55.1,tip:"카사딘 후반 R로 피즈 이동기 모두 추적"),
+  {id:"Malzahar",wr:54.7,tip:"말자하르 패시브 방어막으로 피즈 폭발 딜 흡수"),
+  {id:"Katarina",wr:54.1,tip:"카타리나의 빠른 재점프로 피즈 E 위에서 딜 가능"),
+  {id:"Zed",wr:53.6,tip:"제드 AD 딜이 피즈 AP 아이템에 의한 낮은 방어력 관통"),
+]},
+"Katarina":{ role:"미드", easy:[
+  {id:"Malzahar",wr:57.1,tip:"카타리나 이동기로 말자하르 R 방향 이탈, CC 없는 조합에 강함"},
+  {id:"Veigar",wr:56.3,tip:"베이가 W 우리를 카타리나 E로 탈출 가능"},
+  {id:"Annie",wr:55.8,tip:"애니 스턴 타이밍에 카타리나 E 회피, 딜 연계"},
+  {id:"Twisted Fate",wr:55.1,tip:"트페의 카드 CC를 이동기로 회피, 근접 딜 우위"},
+  {id:"Lux",wr:54.6,tip:"럭스 직선 스킬을 단검 텔레포트로 모두 회피"},
+],hard:[
+  {id:"LeBlanc",wr:57.4,tip:"르블랑이 카타리나 R 전에 폭발 딜로 선처리"},
+  {id:"Cassiopeia",wr:55.9,tip:"카시오페아 R로 카타리나 R 봉쇄, 독 지속 딜"},
+  {id:"Syndra",wr:55.2,tip:"신드라 W-E-Q로 카타리나 R 채널 중단"),
+  {id:"Diana",wr:54.6,tip:"다이애나 R로 카타리나 집결 후 R 봉쇄"),
+  {id:"Galio",wr:54.1,tip:"갈리오 W 도발이 카타리나 R을 즉시 차단"},
+]},
+"LeBlanc":{ role:"미드", easy:[
+  {id:"Veigar",wr:59.1,tip:"르블랑 폭발 딜이 베이가 W 발동 전에 처리 가능"},
+  {id:"Annie",wr:57.6,tip:"르블랑 이동기로 애니 스턴 범위 이탈, 빠른 폭발 딜"},
+  {id:"Lux",wr:57.2,tip:"럭스 스킬을 W로 회피, 근접 폭발 콤보 일방적"},
+  {id:"Orianna",wr:56.4,tip:"르블랑 폭발 딜이 오리아나 R 이전 처리 가능"},
+  {id:"Viktor",wr:55.8,tip:"빅터 성장 전 르블랑 폭발 딜로 라인전 압도"},
+],hard:[
+  {id:"Fizz",wr:56.8,tip:"피즈 E로 르블랑 폭발 딜 회피, 역딜 가능"},
+  {id:"Zed",wr:55.3,tip:"제드의 이동기가 르블랑 스킬 패턴 추적"),
+  {id:"Galio",wr:54.9,tip:"갈리오 마저로 르블랑 AP 딜 흡수, W 도발로 강제"),
+  {id:"Kassadin",wr:54.3,tip:"카사딘이 르블랑 Q 맞아도 R 회복으로 지속"),
+  {id:"Malzahar",wr:53.7,tip:"말자하르 R이 르블랑 이동기를 봉쇄"),
+]},
+"Kassadin":{ role:"미드", easy:[
+  {id:"Veigar",wr:57.8,tip:"카사딘 R로 베이가 W 우리 즉시 탈출, 폭발 딜 연계"},
+  {id:"Malzahar",wr:56.9,tip:"카사딘이 말자하르에게 많이 맞아도 마저로 생존, 후반 역전"},
+  {id:"Lux",wr:56.4,tip:"럭스 스킬을 R로 회피, 근접 폭발 연계"},
+  {id:"Viktor",wr:55.7,tip:"빅터 스킬이 대부분 AP라 카사딘 마저 효율 극대화"},
+  {id:"Orianna",wr:55.1,tip:"오리아나 R 전에 카사딘이 근접 접근, 폭발 콤보"},
+],hard:[
+  {id:"Fizz",wr:57.4,tip:"피즈 초반 딜이 카사딘 R 성장 전 라인 압박"},
+  {id:"Zed",wr:56.2,tip:"제드 AD 딜이 카사딘 마저를 우회"},
+  {id:"Talon",wr:55.8,tip:"탈론 이동기와 AD 폭발 딜이 카사딘 R 전 처리"),
+  {id:"Katarina",wr:54.6,tip:"카타리나가 카사딘 R 위치를 예측해 딜 가능"),
+  {id:"Qiyana",wr:53.9,tip:"기야나 이동기가 카사딘 R을 추적"),
+]},
+"Syndra":{ role:"미드", easy:[
+  {id:"Veigar",wr:58.2,tip:"신드라 Q 범위가 베이가 W 우리보다 크고 빠름"},
+  {id:"Annie",wr:57.1,tip:"신드라 사거리로 애니 접근 전 지속 견제"},
+  {id:"Twisted Fate",wr:56.4,tip:"트페의 카드 CC를 신드라 긴 사거리로 먼저 압박"},
+  {id:"Orianna",wr:55.6,tip:"신드라 R의 폭발 딜이 오리아나 방어보다 빠름"},
+  {id:"Lux",wr:55.1,tip:"신드라가 럭스 스킬 사거리 밖에서 Q 지속 견제"},
+],hard:[
+  {id:"Fizz",wr:57.4,tip:"피즈 E로 신드라 볼 스킬 모두 회피"},
+  {id:"Akali",wr:55.8,tip:"아칼리 은신으로 신드라 타게팅 스킬 회피"),
+  {id:"LeBlanc",wr:55.1,tip:"르블랑 폭발 딜이 신드라 볼 완성 전에 선처리"),
+  {id:"Zed",wr:54.5,tip:"제드 이동기로 신드라 볼 CC 모두 회피"),
+  {id:"Katarina",wr:53.9,tip:"카타리나 R 중 신드라 CC 타이밍 놓치는 경우 많음"),
+]},
+"TwistedFate":{ role:"미드", easy:[
+  {id:"Malzahar",wr:56.8,tip:"트페 금 카드로 말자하르 R 채널 즉시 차단 가능"},
+  {id:"Veigar",wr:56.1,tip:"트페가 베이가보다 선제 CC 발동 시간이 빠름"},
+  {id:"Annie",wr:55.4,tip:"트페의 안정적인 카드 파밍으로 애니보다 유리한 라인전"},
+  {id:"Lux",wr:54.9,tip:"트페 금 카드가 럭스 스킬보다 발동 빠름"},
+  {id:"Galio",wr:54.2,tip:"트페 R 전역 로밍이 갈리오 R보다 더 효율적"},
+],hard:[
+  {id:"Talon",wr:57.4,tip:"탈론 이동기가 트페 카드 패턴 회피, AD 폭발 딜 우위"},
+  {id:"Katarina",wr:56.2,tip:"카타리나 이동기로 트페 카드 회피 가능"},
+  {id:"Zed",wr:55.6,tip:"제드 그림자로 트페 카드 CC 회피, AD 딜 압도"},
+  {id:"Akali",wr:54.9,tip:"아칼리 은신으로 트페 카드 예측 차단"),
+  {id:"Leblanc",wr:54.1,tip:"르블랑 폭발 딜이 트페 카드 완성 전에 처리"),
+]},
+
+// ===== BOT =====
+"Caitlyn":{ role:"원딜", easy:[
+  {id:"Jinx",wr:56.8,tip:"케이틀린 사거리가 진X보다 길어 안전하게 지속 견제 가능"},
+  {id:"Aphelios",wr:55.4,tip:"케이틀린의 긴 사거리로 아펠리오스 무기 교환 중 견제"},
+  {id:"Xayah",wr:55.1,tip:"케이틀린 덫으로 제이 이동기를 제한, 사거리 우위"},
+  {id:"Varus",wr:54.7,tip:"바루스의 느린 이동속도에 케이틀린 R 히트 용이"},
+  {id:"Kog'Maw",wr:54.2,tip:"코그모의 이동기 부재로 케이틀린 R 적중 쉬움"},
+],hard:[
+  {id:"Draven",wr:57.2,tip:"드레이븐의 초반 폭발 딜이 케이틀린 장거리 이점을 극복"},
+  {id:"MissFortune",wr:55.8,tip:"미포의 초반 Q-AA 딜이 케이틀린보다 강함"},
+  {id:"Lucian",wr:55.1,tip:"루시안의 이동기와 근거리 교환이 케이틀린 사거리 상쇄"},
+  {id:"Tristana",wr:54.6,tip:"트리스타나의 E로 케이틀린 뒤로 밀기, 사거리 이점 상쇄"},
+  {id:"Sivir",wr:54.1,tip:"시비르 E로 케이틀린 Q-R 모두 차단"),
+]},
+"Jinx":{ role:"원딜", easy:[
+  {id:"Aphelios",wr:57.1,tip:"아펠리오스의 낮은 이동기에 진X 로켓 원거리 딜 우위"},
+  {id:"Varus",wr:56.4,tip:"바루스의 느린 이동에 진X 가속 풍선 추격 이점"},
+  {id:"Kog'Maw",wr:56.1,tip:"코그모 이동기 부족으로 진X 설치물 모두 밟게 됨"},
+  {id:"Samira",wr:55.3,tip:"사미라의 근접 접근 전 진X 원거리 딜로 체력 소진"},
+  {id:"Xayah",wr:54.8,tip:"이동기가 없는 진X가 제이와 비슷한 포지션 싸움"},
+],hard:[
+  {id:"Draven",wr:58.2,tip:"드레이븐 초반 딜이 진X보다 압도적, 파밍 방해"},
+  {id:"Caitlyn",wr:56.8,tip:"케이틀린 사거리 이점으로 진X 접근 전 지속 견제"},
+  {id:"Lucian",wr:55.6,tip:"루시안 이동기와 근거리 교환으로 진X 포지션 흔들기"},
+  {id:"Tristana",wr:55.1,tip:"트리스타나 W로 진X에게 접근 후 E 폭발 압박"},
+  {id:"Sivir",wr:54.4,tip:"시비르 E로 진X 스킬 모두 차단, 후반 팀파이트 강함"),
+]},
+"Draven":{ role:"원딜", easy:[
+  {id:"Jinx",wr:58.2,tip:"드레이븐 초반 폭발 딜로 진X 라인전 압도"},
+  {id:"Caitlyn",wr:57.2,tip:"드레이븐의 초반 딜이 케이틀린 장거리 이점 극복"},
+  {id:"MissFortune",wr:56.4,tip:"드레이븐 AA 딜이 미포보다 빠른 킬각"},
+  {id:"Varus",wr:55.9,tip:"바루스의 느린 이동에 드레이븐 축 딜 적중 용이"},
+  {id:"Kog'Maw",wr:55.3,tip:"코그모 이동기 부족으로 드레이븐 축 도끼 컨트롤 유리"},
+],hard:[
+  {id:"Sivir",wr:57.4,tip:"시비르 E로 드레이븐 축 도끼 차단, 스펠실드로 빈틈 공략"},
+  {id:"Caitlyn",wr:55.8,tip:"케이틀린이 드레이븐보다 긴 사거리로 도끼 컨트롤 방해"},
+  {id:"Tristana",wr:55.2,tip:"트리스타나 E로 드레이븐 밀어내기, 도끼 컨트롤 방해"},
+  {id:"Vayne",wr:54.7,tip:"베인 이동기로 드레이븐 도끼 낙하 지점 이탈 가능"},
+  {id:"Ezreal",wr:54.1,tip:"이즈리얼 이동기로 드레이븐 AA 범위 유지 방해"),
+]},
+"Ezreal":{ role:"원딜", easy:[
+  {id:"Varus",wr:57.1,tip:"이즈리얼 이동기로 바루스 Q-R CC 모두 회피"},
+  {id:"Aphelios",wr:56.4,tip:"아펠리오스 무기 교환 중 이즈리얼 Q로 지속 견제"},
+  {id:"MissFortune",wr:55.8,tip:"미포 이동기 부족에 이즈리얼 E로 Q 회피 용이"},
+  {id:"Kog'Maw",wr:55.3,tip:"코그모 이동기 없어 이즈리얼 Q 적중 쉬움"},
+  {id:"Xayah",wr:54.7,tip:"이즈리얼 E로 제이 R 깃털 방향 이탈 가능"},
+],hard:[
+  {id:"Draven",wr:57.2,tip:"드레이븐 초반 딜이 이즈리얼 Q 파밍보다 압도적"},
+  {id:"Caitlyn",wr:55.6,tip:"케이틀린 사거리가 이즈리얼 Q보다 길어 지속 견제"),
+  {id:"Jinx",wr:54.9,tip:"진X 후반 로켓 사거리가 이즈리얼 능가"),
+  {id:"Samira",wr:54.3,tip:"사미라 W로 이즈리얼 스킬 차단 후 근접 콤보"),
+  {id:"Lucian",wr:53.8,tip:"루시안 이동기로 이즈리얼 Q 회피, 근거리 교환 우위"),
+]},
+"Vayne":{ role:"원딜", easy:[
+  {id:"Malphite",wr:62.1,tip:"말파이트 체력에 실버 볼트 효율 극대화, 이동기로 R 회피"},
+  {id:"Cho'Gath",wr:59.4,tip:"초가스 높은 체력이 베인 실버 볼트에 취약"},
+  {id:"Garen",wr:57.8,tip:"가렌의 높은 체력에 실버 볼트 효율 높고 이동기로 패턴 피하기"},
+  {id:"Nasus",wr:56.4,tip:"나서스 높은 체력에 실버 볼트 지속 딜, 이동기로 W 회피"},
+  {id:"Tryndamere",wr:55.7,tip:"트린다미어 R 중 베인 이동기로 안전 유지, 실버 볼트 지속"),
+],hard:[
+  {id:"Draven",wr:58.4,tip:"드레이븐 초반 폭발 딜이 베인 성장 전 압도"},
+  {id:"Caitlyn",wr:56.2,tip:"케이틀린 긴 사거리로 베인 접근 전 지속 견제"},
+  {id:"MissFortune",wr:55.1,tip:"미포 W 이동 속도 너프로 베인 이동기 효율 감소"),
+  {id:"Ashe",wr:54.8,tip:"애쉬 R-W로 베인 이동기를 CC로 봉쇄"),
+  {id:"Jinx",wr:54.2,tip:"진X 후반 사거리와 딜이 베인 능가"),
+]},
+"Jhin":{ role:"원딜", easy:[
+  {id:"Kog'Maw",wr:57.4,tip:"진의 4번째 탄환 폭발 딜이 코그모 낮은 체력에 직결"},
+  {id:"Aphelios",wr:56.1,tip:"아펠리오스 무기 교환 중 진 4탄환 딜 연계"),
+  {id:"Xayah",wr:55.6,tip:"진 W 덫으로 제이 이동기를 차단, 4탄환 처형"),
+  {id:"Varus",wr:55.2,tip:"바루스의 느린 이동에 진 4탄환 적중 쉬움"},
+  {id:"Jinx",wr:54.7,tip:"진X 이동기 부족을 진 W 덫으로 활용"),
+],hard:[
+  {id:"Draven",wr:57.1,tip:"드레이븐 초반 딜이 진의 재장전 빈틈 공략"},
+  {id:"Lucian",wr:55.8,tip:"루시안 이동기로 진 4탄환 회피, 근거리 교환 우위"},
+  {id:"Tristana",wr:55.2,tip:"트리스타나 이동기로 진 스킬 회피, 근접 E 폭발 압박"),
+  {id:"Sivir",wr:54.6,tip:"시비르 E로 진 W-R 모두 차단"),
+  {id:"Ezreal",wr:54.1,tip:"이즈리얼 이동기로 진 4탄환 착탄 지점 이탈"),
+]},
+"MissFortune":{ role:"원딜", easy:[
+  {id:"Varus",wr:57.8,tip:"미포 Q가 바루스 뒤 미니언에 반사돼 지속 체력 압박"},
+  {id:"Kog'Maw",wr:56.4,tip:"코그모 이동기 부족으로 미포 Q 반사 적중 쉬움"},
+  {id:"Aphelios",wr:55.9,tip:"미포 Q-AA 딜이 아펠리오스 무기 교환 중 효율적"},
+  {id:"Jinx",wr:55.2,tip:"미포 W 이동 속도 너프로 진X 이동기 제한"},
+  {id:"Xayah",wr:54.7,tip:"미포 Q 반사가 제이 딜 패턴보다 빠른 라인 압박"),
+],hard:[
+  {id:"Sivir",wr:57.4,tip:"시비르 E로 미포 Q-R 모두 차단, 라인 유지"),
+  {id:"Ezreal",wr:55.8,tip:"이즈리얼 이동기로 미포 R 채널 중 이탈 가능"),
+  {id:"Draven",wr:55.4,tip:"드레이븐 초반 딜이 미포보다 높아 선제권 상실"),
+  {id:"Tristana",wr:54.9,tip:"트리스타나 W로 미포에게 접근 후 E 압박"),
+  {id:"Caitlyn",wr:54.3,tip:"케이틀린 긴 사거리로 미포 Q 반사 지점 미리 이탈"),
+]},
+
+// ===== SUPPORT =====
+"Thresh":{ role:"서포터", easy:[
+  {id:"Soraka",wr:57.4,tip:"소라카 Q 사거리 밖에서 쓰레쉬 Q로 훅 후 조합 처리"},
+  {id:"Sona",wr:56.8,tip:"소나의 낮은 체력을 쓰레쉬 훅으로 즉시 킬각"},
+  {id:"Lulu",wr:55.3,tip:"룰루 R 전에 쓰레쉬 Q-R로 폭발 CC 가능"},
+  {id:"Janna",wr:55.1,tip:"잔나의 이동기가 약해 쓰레쉬 Q 적중 용이"},
+  {id:"Nami",wr:54.7,tip:"나미 R 전에 쓰레쉬 훅으로 포지션 강제"),
+],hard:[
+  {id:"Blitzcrank",wr:56.2,tip:"블리츠크랭크 Q 사거리가 길어 쓰레쉬 훅 전에 선제"},
+  {id:"Nautilus",wr:55.1,tip:"노틸러스 R이 쓰레쉬 R 등 모든 CC 연계 차단"),
+  {id:"Leona",wr:54.6,tip:"레오나의 높은 CC 연계가 쓰레쉬보다 안정적"),
+  {id:"Pyke",wr:54.1,tip:"파이크 이동기와 은신으로 쓰레쉬 훅 방향 예측 차단"),
+  {id:"Morgana",wr:53.8,tip:"모르가나 E로 쓰레쉬 훅-R 모두 무효화"),
+]},
+"Blitzcrank":{ role:"서포터", easy:[
+  {id:"Soraka",wr:58.4,tip:"소라카가 블리츠 Q 범위 안에 오면 즉시 처리 가능"},
+  {id:"Sona",wr:57.8,tip:"소나가 블리츠 Q 맞으면 거의 킬 확정"},
+  {id:"Janna",wr:56.4,tip:"잔나 Q 발동 전에 블리츠 훅으로 선제 CC"},
+  {id:"Nami",wr:55.9,tip:"나미가 블리츠 Q 회피 어려움"),
+  {id:"Lulu",wr:55.2,tip:"룰루 W 발동 전에 블리츠 훅으로 접근"),
+],hard:[
+  {id:"Morgana",wr:58.1,tip:"모르가나 E로 블리츠 Q를 완전 차단, 블리츠 무력화"),
+  {id:"Sivir",wr:56.7,tip:"시비르 E로 블리츠 Q 차단 가능"),
+  {id:"Ezreal",wr:55.3,tip:"이즈리얼 E로 블리츠 Q 착탄 전 이탈"),
+  {id:"Thresh",wr:54.8,tip:"쓰레쉬 E로 블리츠 훅 차단 가능"),
+  {id:"Nautilus",wr:54.2,tip:"노틸러스 Q로 먼저 훅을 날려 블리츠 훅 선점"),
+]},
+"Lulu":{ role:"서포터", easy:[
+  {id:"Blitzcrank",wr:56.4,tip:"룰루 E-W로 블리츠 훅 차단, 원딜 보호 극대화"},
+  {id:"Thresh",wr:55.8,tip:"룰루 R로 원딜 블리츠 훅 생존, 반격 CC"),
+  {id:"Leona",wr:55.1,tip:"레오나 근접 접근에 룰루 W 다람쥐 변신으로 무력화"},
+  {id:"Nautilus",wr:54.6,tip:"노틸러스 R에 룰루 E 방어막으로 원딜 생존"),
+  {id:"Alistar",wr:54.1,tip:"알리스타 R 전에 룰루 W로 무력화, 원딜 보호"),
+],hard:[
+  {id:"Pyke",wr:56.8,tip:"파이크 이동기와 은신으로 룰루 W 예측 차단"},
+  {id:"Morgana",wr:55.6,tip:"모르가나 E로 룰루 CC 모두 무효화"),
+  {id:"Brand",wr:55.1,tip:"브랜드 AP 딜이 룰루 체력 빠르게 소진"),
+  {id:"Zyra",wr:54.5,tip:"식물로 구역 장악, 룰루 이동을 제한"),
+  {id:"Karma",wr:53.9,tip:"카르마 Q의 높은 빈도 견제가 룰루 마나 압박"),
+]},
+"Morgana":{ role:"서포터", easy:[
+  {id:"Blitzcrank",wr:58.1,tip:"모르가나 E로 블리츠 Q 완전 차단, 팀원 보호"),
+  {id:"Nautilus",wr:56.4,tip:"모르가나 E로 노틸러스 Q-R 모두 무효화"),
+  {id:"Thresh",wr:55.6,tip:"모르가나 E로 쓰레쉬 Q-R 차단, 반격 Q 연계"),
+  {id:"Leona",wr:55.1,tip:"레오나 E-R CC를 모르가나 E로 모두 무효화"),
+  {id:"Alistar",wr:54.7,tip:"알리스타 R 전에 모르가나 Q로 봉쇄, E로 팀원 보호"),
+],hard:[
+  {id:"Lulu",wr:55.6,tip:"룰루 R-E로 팀원 보호, 모르가나 Q 맞아도 생존"),
+  {id:"Pyke",wr:54.9,tip:"파이크 이동기로 모르가나 Q 회피 가능"),
+  {id:"Thresh",wr:54.2,tip:"쓰레쉬 이동기로 모르가나 Q 회피, 반격 훅"),
+  {id:"Zyra",wr:53.8,tip:"식물 구역장악이 모르가나 Q 회피를 어렵게"),
+  {id:"Brand",wr:53.2,tip:"브랜드 AP 딜이 모르가나 체력 소진"),
+]},
+"Soraka":{ role:"서포터", easy:[
+  {id:"Sona",wr:56.4,tip:"소라카 Q 견제가 소나 딜보다 안정적, 무한 체력 회복"),
+  {id:"Nami",wr:55.2,tip:"소라카 Q 사거리가 나미보다 길어 안전 견제"),
+  {id:"Lulu",wr:54.8,tip:"소라카 무한 회복이 룰루 버프보다 지속력 우위"),
+  {id:"Janna",wr:54.3,tip:"잔나 방어적 플레이에 소라카 Q 체력 차이 벌림"),
+  {id:"Karma",wr:53.9,tip:"소라카 회복이 카르마 딜보다 지속력 우위"),
+],hard:[
+  {id:"Blitzcrank",wr:58.4,tip:"블리츠 Q에 소라카 맞으면 거의 킬 확정"),
+  {id:"Thresh",wr:57.2,tip:"쓰레쉬 Q-R 연계에 소라카 낮은 체력 취약"),
+  {id:"Brand",wr:56.1,tip:"브랜드 AP 딜이 소라카 회복 속도 초과"),
+  {id:"Zyra",wr:55.4,tip:"식물 CC로 소라카 이동 제한, 조합 처리"),
+  {id:"Leona",wr:54.8,tip:"레오나 CC로 소라카 회복 채널 봉쇄"),
+]},
+"Leona":{ role:"서포터", easy:[
+  {id:"Sona",wr:58.2,tip:"소나 낮은 체력에 레오나 E-Q 즉시 처리 확정"},
+  {id:"Soraka",wr:57.1,tip:"소라카 이동기 부족에 레오나 접근 후 CC 봉쇄"),
+  {id:"Nami",wr:56.4,tip:"나미 R 전에 레오나 E-R로 선제 CC 연계"),
+  {id:"Janna",wr:55.8,tip:"레오나 E가 잔나 Q보다 빠름, 접근 후 CC"),
+  {id:"Lulu",wr:55.1,tip:"레오나 R로 룰루 W 이전 CC, 근접 처리"),
+],hard:[
+  {id:"Morgana",wr:55.1,tip:"모르가나 E로 레오나 모든 CC 무효화"),
+  {id:"Blitzcrank",wr:54.7,tip:"블리츠 Q 사거리가 레오나보다 길어 선제 훅"),
+  {id:"Thresh",wr:54.2,tip:"쓰레쉬 이동기로 레오나 E 회피 가능"),
+  {id:"Lulu",wr:53.8,tip:"룰루 W로 레오나 E 접근 봉쇄"),
+  {id:"Nautilus",wr:53.3,tip:"노틸러스 CC가 레오나와 동급, 사거리 우위"),
+]},
+"Nautilus":{ role:"서포터", easy:[
+  {id:"Soraka",wr:58.6,tip:"노틸러스 Q로 소라카 즉시 CC, 조합 처리"),
+  {id:"Sona",wr:57.9,tip:"소나 낮은 체력에 노틸러스 Q-R 즉시 처리"),
+  {id:"Janna",wr:56.2,tip:"노틸러스 Q 사거리가 길어 잔나 이동기 전에 선제"),
+  {id:"Nami",wr:55.7,tip:"나미 R 전에 노틸러스 R로 선제 CC"),
+  {id:"Karma",wr:55.1,tip:"카르마 E 이전에 노틸러스 Q로 접근 봉쇄"),
+],hard:[
+  {id:"Morgana",wr:56.4,tip:"모르가나 E로 노틸러스 Q-R 모두 무효화"),
+  {id:"Thresh",wr:55.2,tip:"쓰레쉬가 노틸러스보다 유연한 CC 연계"),
+  {id:"Pyke",wr:54.7,tip:"파이크 이동기로 노틸러스 Q 회피 가능"),
+  {id:"Lulu",wr:54.1,tip:"룰루 E-W로 팀원 노틸러스 CC 생존"),
+  {id:"Blitzcrank",wr:53.6,tip:"블리츠 Q 사거리가 노틸러스 Q와 비슷하지만 더 빠름"),
+]},
+};
+
+// Display name mapping (KR) - dynamically filled from Data Dragon
+const krNames = {};
+
+// ============================================================
+// SEARCH + AUTOCOMPLETE
+// ============================================================
+let acIndex = -1;
+let acItems = [];
+let currentChamp = null;
+let currentTab = 'easy';
+
+function onSearch() {
+  const val = document.getElementById('champ-search').value.trim();
+  const list = document.getElementById('ac-list');
+  if (val.length === 0) { list.classList.remove('show'); return; }
+  if (!champLoaded) { list.classList.remove('show'); return; }
+
+  const q = val.toLowerCase();
+  acItems = Object.values(champData).filter(c =>
+    c.name_kr.toLowerCase().includes(q) || c.id.toLowerCase().includes(q)
+  ).slice(0, 8);
+
+  if (acItems.length === 0) { list.classList.remove('show'); return; }
+  list.innerHTML = acItems.map((c, i) => {
+    const tagCls = c.tags[0] === 'Tank' ? 'tag-top' :
+                   c.tags[0] === 'Assassin' ? 'tag-mid' :
+                   c.tags[0] === 'Mage' ? 'tag-mid' :
+                   c.tags[0] === 'Marksman' ? 'tag-bot' :
+                   c.tags[0] === 'Support' ? 'tag-sup' : 'tag-jng';
+    return `<div class="ac-item" onclick="selectChamp('${c.id}')">
+      <img src="${champImg(c.id)}" onerror="this.src='https://ddragon.leagueoflegends.com/cdn/img/champion/tiles/${c.id}_0.jpg'">
+      <span class="ac-name">${c.name_kr}</span>
+      <span class="tag ${tagCls}">${c.tags[0]||''}</span>
+    </div>`;
+  }).join('');
+  acIndex = -1;
+  list.classList.add('show');
+}
+
+function onKey(e) {
+  const list = document.getElementById('ac-list');
+  const items = list.querySelectorAll('.ac-item');
+  if (e.key === 'ArrowDown') { acIndex = Math.min(acIndex+1, items.length-1); updateAcFocus(items); }
+  else if (e.key === 'ArrowUp') { acIndex = Math.max(acIndex-1, 0); updateAcFocus(items); }
+  else if (e.key === 'Enter' && acIndex >= 0 && acItems[acIndex]) { selectChamp(acItems[acIndex].id); }
+  else if (e.key === 'Escape') { list.classList.remove('show'); }
+}
+function updateAcFocus(items) {
+  items.forEach((el, i) => el.classList.toggle('active', i === acIndex));
+}
+
+function selectChamp(id) {
+  document.getElementById('ac-list').classList.remove('show');
+  const c = champData[id];
+  if (c) {
+    document.getElementById('champ-search').value = c.name_kr;
+    currentChamp = id;
+    renderResult(id);
+  }
+}
+
+function renderResult(id) {
+  const c = champData[id];
+  if (!c) return;
+  const data = DB[id];
+  const panel = document.getElementById('result-panel');
+  const noRes = document.getElementById('no-result');
+  if (!data) { panel.classList.remove('show'); noRes.style.display = 'block'; return; }
+  noRes.style.display = 'none';
+  panel.classList.add('show');
+
+  // Header
+  const roleCls = ROLE_TAG[data.role] || 'tag-top';
+  document.getElementById('champ-header').innerHTML = `
+    <img src="${champImg(id)}" onerror="this.src=''">
+    <div class="ch-info">
+      <h3>${c.name_kr}</h3>
+      <div class="ch-role"><span class="tag ${roleCls}">${data.role}</span></div>
+    </div>
+    <div class="ch-desc">
+      <strong>쉬운 상대 ${data.easy.length}명</strong> · <strong>어려운 상대 ${data.hard.length}명</strong><br>
+      <span style="font-size:11px">커뮤니티 통계 기반 분석 데이터</span>
+    </div>`;
+
+  switchTab(currentTab, true);
+}
+
+function switchTab(tab, force) {
+  if (!currentChamp) return;
+  if (tab === currentTab && !force) return;
+  currentTab = tab;
+  const data = DB[currentChamp];
+  if (!data) return;
+  const eBtn = document.getElementById('tab-easy');
+  const hBtn = document.getElementById('tab-hard');
+  if (tab === 'easy') {
+    eBtn.className = 'tab-btn active'; hBtn.className = 'tab-btn';
+    renderCards(data.easy, false);
+  } else {
+    hBtn.className = 'tab-btn active hard'; eBtn.className = 'tab-btn';
+    renderCards(data.hard, true);
+  }
+}
+
+function renderCards(list, isHard) {
+  const grid = document.getElementById('matchup-grid');
+  grid.innerHTML = list.map((m, i) => {
+    const c = champData[m.id] || { name_kr: m.id };
+    const fillW = isHard ? (100 - m.wr) : (m.wr - 50) * 4;
+    const fillPct = Math.min(100, Math.max(5, fillW));
+    const wrLabel = isHard
+      ? `상대 챔피언 승률 <span class="hard">${m.wr}%</span> (내 챔피언 ${(100-m.wr).toFixed(1)}%)`
+      : `내 챔피언 승률 <span>${m.wr}%</span>`;
+    return `<div class="matchup-card${isHard?' hard-card':''}">
+      <div class="mc-portrait${isHard?' hard':''}">
+        <img src="${champImg(m.id)}" onerror="this.style.opacity=0.4">
+        <div class="mc-rank">${i+1}</div>
+      </div>
+      <div class="mc-info">
+        <h4>${c.name_kr}</h4>
+        <div class="mc-wr-label">${wrLabel}</div>
+        <div class="mc-wr-bar"><div class="mc-wr-fill${isHard?' hard':''}" style="width:${fillPct}%"></div></div>
+        <div class="mc-tip">${m.tip}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ============================================================
+// INIT
+// ============================================================
+(async () => {
+  try {
+    const ver = await fetchVersion();
+    document.getElementById('current-ver').textContent = ver;
+    document.getElementById('header-ver').textContent = 'v' + ver;
+    document.getElementById('ver-status').textContent = '최종 확인: ' + new Date().toLocaleString('ko-KR');
+    if (!knownVersion) { knownVersion = ver; localStorage.setItem('lol_known_version', ver); }
+    const parts = ver.split('.');
+    if (parts.length >= 2) {
+      const url = 'https://www.leagueoflegends.com/ko-kr/news/game-updates/patch-' + parts[0] + '-' + parts[1] + '-notes/';
+      const al = document.getElementById('auto-link');
+      al.href = url; al.textContent = '🔗 패치 ' + ver + ' 노트 바로가기';
+      document.getElementById('auto-link-box').style.display = 'block';
+    }
+    await loadChampions(ver);
+    addLog('초기화 완료 (v' + ver + ')', 'ok');
+  } catch(e) {
+    addLog('초기화 실패: ' + e.message, 'err');
+  }
+})();
+
+// Click outside closes autocomplete
+document.addEventListener('click', e => {
+  if (!e.target.closest('.search-wrap')) document.getElementById('ac-list').classList.remove('show');
+});
+</script>
+</body>
+</html>
